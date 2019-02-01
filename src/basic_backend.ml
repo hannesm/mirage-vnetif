@@ -91,9 +91,9 @@ module Make = struct
         (`Ok t.last_id)
 
     let unregister t id =
-        Hashtbl.remove t.macs id;
         Hashtbl.remove t.listeners id;
         Hashtbl.remove t.listener_callbacks_in_progress id;
+        Hashtbl.remove t.macs id;
         Lwt.return_unit
 
     let wait_for_callbacks c =
@@ -112,7 +112,9 @@ module Make = struct
         wait_for_callbacks c
 
     let mac t id =
-        Hashtbl.find t.macs id
+        match Hashtbl.find t.macs id with
+          | exception Not_found -> Macaddr.broadcast
+          | x -> x
 
     let set_listen_fn t id fn =
         Hashtbl.replace t.listeners id fn
